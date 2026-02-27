@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'fastkb.user.js'
+      - 'userscript/fastkb.user.js'
 
 jobs:
   release:
@@ -19,10 +19,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Parse metadata from fastkb.user.js
+      - name: Parse metadata from userscript
         id: metadata
         run: |
-          FILE="fastkb.user.js"
+          FILE="userscript/fastkb.user.js"
           if [ ! -f "$FILE" ]; then
             echo "File $FILE not found."
             exit 1
@@ -36,22 +36,24 @@ jobs:
             exit 1
           fi
 
-          DESCRIPTION=$(echo "$METADATA" | grep -oP '@description\s+\K.*' | head -1)
-          if [ -z "$DESCRIPTION" ]; then
-            DESCRIPTION="Auto-release of version $VERSION"
-          fi
-
-          NAME=$(echo "$METADATA" | grep -oP '@name\s+\K.*' | head -1)
-          if [ -z "$NAME" ]; then
-            NAME="fastkb.user.js"
-          fi
-
           TAG_VERSION="v${VERSION#v}"
-
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "tag=$TAG_VERSION" >> $GITHUB_OUTPUT
-          echo "description=$DESCRIPTION" >> $GITHUB_OUTPUT
-          echo "name=$NAME" >> $GITHUB_OUTPUT
+
+          # 优先使用 DESCRIPTION.md
+          DESC_FILE="userscript/DESCRIPTION.md"
+          if [ -f "$DESC_FILE" ]; then
+            DESCRIPTION=$(cat "$DESC_FILE")
+          else
+            DESCRIPTION=$(echo "$METADATA" | grep -oP '@description\s+\K.*' | head -1)
+            if [ -z "$DESCRIPTION" ]; then
+              DESCRIPTION="Release $TAG_VERSION"
+            fi
+          fi
+          # 将多行描述保存到环境变量
+          echo "description<<EOF" >> $GITHUB_ENV
+          echo "$DESCRIPTION" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
       - name: Check if tag exists
         id: check_tag
@@ -78,7 +80,7 @@ jobs:
         with:
           tag_name: ${{ steps.metadata.outputs.tag }}
           name: ${{ steps.metadata.outputs.tag }}
-          body: ${{ steps.metadata.outputs.description }}
-          files: fastkb.user.js
+          body: ${{ env.description }}
+          files: userscript/fastkb.user.js
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
