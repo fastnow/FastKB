@@ -1,0 +1,84 @@
+name: Release UserScript on Push
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'fastkb.user.js'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Parse metadata from fastkb.user.js
+        id: metadata
+        run: |
+          FILE="fastkb.user.js"
+          if [ ! -f "$FILE" ]; then
+            echo "File $FILE not found."
+            exit 1
+          fi
+
+          METADATA=$(awk '/==UserScript==/,/==\/UserScript==/' "$FILE")
+
+          VERSION=$(echo "$METADATA" | grep -oP '@version\s+\K\S+' | head -1)
+          if [ -z "$VERSION" ]; then
+            echo "No @version found in $FILE"
+            exit 1
+          fi
+
+          DESCRIPTION=$(echo "$METADATA" | grep -oP '@description\s+\K.*' | head -1)
+          if [ -z "$DESCRIPTION" ]; then
+            DESCRIPTION="Auto-release of version $VERSION"
+          fi
+
+          NAME=$(echo "$METADATA" | grep -oP '@name\s+\K.*' | head -1)
+          if [ -z "$NAME" ]; then
+            NAME="fastkb.user.js"
+          fi
+
+          TAG_VERSION="v${VERSION#v}"
+
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=$TAG_VERSION" >> $GITHUB_OUTPUT
+          echo "description=$DESCRIPTION" >> $GITHUB_OUTPUT
+          echo "name=$NAME" >> $GITHUB_OUTPUT
+
+      - name: Check if tag exists
+        id: check_tag
+        run: |
+          TAG="${{ steps.metadata.outputs.tag }}"
+          if git ls-remote --exit-code origin "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create and push tag
+        if: steps.check_tag.outputs.exists == 'false'
+        run: |
+          TAG="${{ steps.metadata.outputs.tag }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin "$TAG"
+
+      - name: Create Release and upload asset
+        if: steps.check_tag.outputs.exists == 'false'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.metadata.outputs.tag }}
+          name: ${{ steps.metadata.outputs.tag }}
+          body: ${{ steps.metadata.outputs.description }}
+          files: fastkb.user.js
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
