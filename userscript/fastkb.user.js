@@ -1,10 +1,14 @@
 // ==UserScript==
-// @name         极简触控手柄·最终版
-// @namespace    http://tampermonkey.net/
-// @version      1.0
-// @description  独立宽高，分割线分类，宏播放间隔可调，编辑栏不可移动，底部版权声明。
+// @name         FastKB 网页虚拟键盘插件
+// @namespace    https://github.com/fastnow
+// @version      1.2.4
+// @description   可自由布局、双击编辑的网页虚拟键盘。支持宏、连发、手势、多配置等20+功能，完美适配触摸屏与桌面
 // @author       FastNow Studio
 // @match        *://*/*
+// @icon         https://fastly.jsdelivr.net/gh/fastnow/FastKB@main/assets/icon.jpg
+// @updateURL    https://gh-proxy.org/https://raw.githubusercontent.com/fastnow/FastKB/main/userscript/fastkb.user.js
+// @downloadURL  https://gh-proxy.org/https://raw.githubusercontent.com/fastnow/FastKB/main/userscript/fastkb.user.js
+// @license      MIT
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @grant        GM_deleteValue
@@ -14,15 +18,19 @@
 (function() {
     'use strict';
 
-    const STORAGE_KEY = 'gamepad_final_v10';
+    const STORAGE_KEY = 'gamepad_final_v15';
     const DEFAULT_PROFILE = {
         buttons: [
-            { id: 'up', text: '↑', key: 'ArrowUp', code: 'ArrowUp', type: 'dpad', left: 100, top: 200, width: 65, height: 65, bg: 'rgba(255,255,255,0.15)', pressedBg: 'rgba(255,255,255,0.4)', opacity: 1.0, locked: false },
-            { id: 'down', text: '↓', key: 'ArrowDown', code: 'ArrowDown', type: 'dpad', left: 100, top: 280, width: 65, height: 65, bg: 'rgba(255,255,255,0.15)', pressedBg: 'rgba(255,255,255,0.4)', opacity: 1.0, locked: false },
-            { id: 'left', text: '←', key: 'ArrowLeft', code: 'ArrowLeft', type: 'dpad', left: 30, top: 280, width: 65, height: 65, bg: 'rgba(255,255,255,0.15)', pressedBg: 'rgba(255,255,255,0.4)', opacity: 1.0, locked: false },
-            { id: 'right', text: '→', key: 'ArrowRight', code: 'ArrowRight', type: 'dpad', left: 170, top: 280, width: 65, height: 65, bg: 'rgba(255,255,255,0.15)', pressedBg: 'rgba(255,255,255,0.4)', opacity: 1.0, locked: false },
-            { id: 'space', text: '␣', key: ' ', code: 'Space', type: 'action', left: 300, top: 240, width: 65, height: 65, bg: 'rgba(255,255,255,0.15)', pressedBg: 'rgba(255,255,255,0.4)', opacity: 1.0, locked: false },
-            { id: 'esc', text: '⎋', key: 'Escape', code: 'Escape', type: 'action', left: 380, top: 240, width: 65, height: 65, bg: 'rgba(255,255,255,0.15)', pressedBg: 'rgba(255,255,255,0.4)', opacity: 1.0, locked: false }
+            { id: 'w', text: 'W', key: 'w', code: 'KeyW', type: 'action', left: 50, top: 150, width: 65, height: 65, bg: 'rgba(255,255,255,0.15)', pressedBg: 'rgba(255,255,255,0.4)', opacity: 1.0, locked: false },
+            { id: 'a', text: 'A', key: 'a', code: 'KeyA', type: 'action', left: 0, top: 220, width: 65, height: 65, bg: 'rgba(255,255,255,0.15)', pressedBg: 'rgba(255,255,255,0.4)', opacity: 1.0, locked: false },
+            { id: 's', text: 'S', key: 's', code: 'KeyS', type: 'action', left: 70, top: 220, width: 65, height: 65, bg: 'rgba(255,255,255,0.15)', pressedBg: 'rgba(255,255,255,0.4)', opacity: 1.0, locked: false },
+            { id: 'd', text: 'D', key: 'd', code: 'KeyD', type: 'action', left: 140, top: 220, width: 65, height: 65, bg: 'rgba(255,255,255,0.15)', pressedBg: 'rgba(255,255,255,0.4)', opacity: 1.0, locked: false },
+            { id: 'up', text: '↑', key: 'ArrowUp', code: 'ArrowUp', type: 'dpad', left: 400, top: 150, width: 65, height: 65, bg: 'rgba(255,255,255,0.15)', pressedBg: 'rgba(255,255,255,0.4)', opacity: 1.0, locked: false },
+            { id: 'left', text: '←', key: 'ArrowLeft', code: 'ArrowLeft', type: 'dpad', left: 330, top: 220, width: 65, height: 65, bg: 'rgba(255,255,255,0.15)', pressedBg: 'rgba(255,255,255,0.4)', opacity: 1.0, locked: false },
+            { id: 'down', text: '↓', key: 'ArrowDown', code: 'ArrowDown', type: 'dpad', left: 400, top: 220, width: 65, height: 65, bg: 'rgba(255,255,255,0.15)', pressedBg: 'rgba(255,255,255,0.4)', opacity: 1.0, locked: false },
+            { id: 'right', text: '→', key: 'ArrowRight', code: 'ArrowRight', type: 'dpad', left: 470, top: 220, width: 65, height: 65, bg: 'rgba(255,255,255,0.15)', pressedBg: 'rgba(255,255,255,0.4)', opacity: 1.0, locked: false },
+            { id: 'space', text: '␣', key: ' ', code: 'Space', type: 'action', left: 600, top: 180, width: 65, height: 65, bg: 'rgba(255,255,255,0.15)', pressedBg: 'rgba(255,255,255,0.4)', opacity: 1.0, locked: false },
+            { id: 'esc', text: '⎋', key: 'Escape', code: 'Escape', type: 'action', left: 680, top: 180, width: 65, height: 65, bg: 'rgba(255,255,255,0.15)', pressedBg: 'rgba(255,255,255,0.4)', opacity: 1.0, locked: false }
         ],
         barColor: '#ff4444',
         barWidth: 100,
@@ -37,8 +45,8 @@
         snapToEdge: false,
         snapAlign: false,
         alignThreshold: 20,
-        macroEnabled: false,
         macroPlayInterval: 100,
+        macroLoopEnabled: false,
         blockKeys: false,
         quickSwitchKey: 'F5',
         doubleClickSpeed: 300,
@@ -76,7 +84,10 @@
     let macroRecording = false;
     let macroSteps = [];
     let macroPlaying = false;
+    let macroLoop = false;
     let longPressTimer = null;
+    let macroPlayTimer = null;
+    let editorOpen = false; // 全局标志：编辑栏是否打开
 
     function saveConfig() { GM_setValue(STORAGE_KEY, JSON.stringify(config)); }
     function saveActiveProfile() {
@@ -84,9 +95,36 @@
         saveConfig();
     }
 
+    function getKeyCode(key) {
+        if (key.length === 1 && key.match(/[a-zA-Z]/)) {
+            return 'Key' + key.toUpperCase();
+        }
+        const map = {
+            ' ': 'Space',
+            'ArrowUp': 'ArrowUp',
+            'ArrowDown': 'ArrowDown',
+            'ArrowLeft': 'ArrowLeft',
+            'ArrowRight': 'ArrowRight',
+            'Escape': 'Escape',
+            'Shift': 'ShiftLeft',
+            'Control': 'ControlLeft',
+            'Alt': 'AltLeft',
+            'Enter': 'Enter',
+            'Tab': 'Tab',
+            'Backspace': 'Backspace',
+            'Delete': 'Delete',
+            'Insert': 'Insert',
+            'Home': 'Home',
+            'End': 'End',
+            'PageUp': 'PageUp',
+            'PageDown': 'PageDown'
+        };
+        return map[key] || key;
+    }
+
     function sendKey(eventType, key, code) {
         const keyCodeMap = { 'ArrowUp':38,'ArrowDown':40,'ArrowLeft':37,'ArrowRight':39,' ':32,'Escape':27 };
-        const keyCode = keyCodeMap[key] || 0;
+        const keyCode = keyCodeMap[key] || (key.length === 1 ? key.toUpperCase().charCodeAt(0) : 0);
         document.dispatchEvent(new KeyboardEvent(eventType, {
             key, code, keyCode, which: keyCode, bubbles: true, cancelable: true
         }));
@@ -157,6 +195,7 @@
         btn.dataset.key = btnConfig.key;
         btn.dataset.code = btnConfig.code;
         btn.dataset.locked = btnConfig.locked ? 'true' : 'false';
+        btn.dataset.editing = 'false';
         btn.textContent = btnConfig.text;
         btn.style.cssText = `
             position: fixed;
@@ -188,6 +227,8 @@
         let startX, startY, startLeft, startTop;
 
         function startDrag(e) {
+            // 如果编辑栏打开，禁止所有按钮拖拽
+            if (editorOpen) return;
             if (!activeConfig.editMode || btnConfig.locked) return;
             e.preventDefault();
             e.stopPropagation();
@@ -201,11 +242,15 @@
             document.addEventListener('touchmove', onDrag, { passive: false });
             document.addEventListener('mouseup', stopDrag);
             document.addEventListener('touchend', stopDrag);
-            if (currentEditingButtonId === btnConfig.id) hideButtonEditor();
         }
 
         function onDrag(e) {
             if (!dragging) return;
+            // 如果编辑栏在拖拽过程中突然打开（极罕见），则停止
+            if (editorOpen) {
+                stopDrag();
+                return;
+            }
             e.preventDefault();
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -353,6 +398,11 @@
         const btnConfig = activeConfig.buttons.find(b => b.id === buttonId);
         if (!btnConfig) return;
         currentEditingButtonId = buttonId;
+        editorOpen = true; // 设置全局标志
+
+        document.querySelectorAll('.gamepad-btn').forEach(btn => {
+            btn.dataset.editing = 'true';
+        });
 
         const editor = document.createElement('div');
         editor.id = 'button-editor';
@@ -371,6 +421,8 @@
             touch-action: none;
         `;
 
+        editor.addEventListener('mousedown', (e) => e.stopPropagation());
+        editor.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: false });
         editor.addEventListener('keydown', (e) => e.stopPropagation(), true);
         editor.addEventListener('keyup', (e) => e.stopPropagation(), true);
 
@@ -382,9 +434,45 @@
             border-radius: 16px 16px 0 0;
             font-weight: bold;
             text-align: center;
+            cursor: move;
         `;
         titleBar.textContent = '编辑按钮';
         editor.appendChild(titleBar);
+
+        let dragStartX, dragStartY, dragStartLeft, dragStartTop, dragging = false;
+        function startDragEditor(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const rect = editor.getBoundingClientRect();
+            dragStartLeft = rect.left; dragStartTop = rect.top;
+            dragStartX = e.touches ? e.touches[0].clientX : e.clientX;
+            dragStartY = e.touches ? e.touches[0].clientY : e.clientY;
+            dragging = true;
+            document.addEventListener('mousemove', onDragEditor);
+            document.addEventListener('touchmove', onDragEditor, { passive: false });
+            document.addEventListener('mouseup', stopDragEditor);
+            document.addEventListener('touchend', stopDragEditor);
+        }
+        function onDragEditor(e) {
+            if (!dragging) return;
+            e.preventDefault();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            requestAnimationFrame(() => {
+                editor.style.left = (dragStartLeft + clientX - dragStartX) + 'px';
+                editor.style.top = (dragStartTop + clientY - dragStartY) + 'px';
+                if (connectorLine) updateConnectorLine(buttonId, editor);
+            });
+        }
+        function stopDragEditor() {
+            dragging = false;
+            document.removeEventListener('mousemove', onDragEditor);
+            document.removeEventListener('touchmove', onDragEditor);
+            document.removeEventListener('mouseup', stopDragEditor);
+            document.removeEventListener('touchend', stopDragEditor);
+        }
+        titleBar.addEventListener('mousedown', startDragEditor);
+        titleBar.addEventListener('touchstart', startDragEditor, { passive: false });
 
         const content = document.createElement('div');
         content.style.cssText = 'display:flex; flex-direction:column; gap:12px;';
@@ -392,8 +480,8 @@
         content.innerHTML = `
             <div style="border-bottom:1px solid #555; margin:4px 0; padding-bottom:4px;"><b>尺寸</b></div>
             <div style="display:flex; gap:8px;">
-                <label>宽: <input type="range" min="30" max="120" value="${btnConfig.width}" id="editor-width" style="width:80px;"></label>
-                <label>高: <input type="range" min="30" max="120" value="${btnConfig.height}" id="editor-height" style="width:80px;"></label>
+                <label>宽: <input type="range" min="30" max="200" value="${btnConfig.width}" id="editor-width" style="width:80px;"></label>
+                <label>高: <input type="range" min="30" max="200" value="${btnConfig.height}" id="editor-height" style="width:80px;"></label>
             </div>
             <div style="border-bottom:1px solid #555; margin:4px 0; padding-bottom:4px;"><b>颜色</b></div>
             <div><label>背景色: <input type="color" id="editor-bg" value="${btnConfig.bg.startsWith('#') ? btnConfig.bg : '#ffffff'}"></label></div>
@@ -474,6 +562,7 @@
         });
         editor.querySelector('#editor-key').addEventListener('input', (e) => {
             btnConfig.key = e.target.value;
+            btnConfig.code = getKeyCode(btnConfig.key);
             updateButtonElement(buttonId, { key: btnConfig.key });
         });
         editor.querySelector('#editor-text').addEventListener('input', (e) => {
@@ -490,7 +579,7 @@
             const defaultBtn = DEFAULT_PROFILE.buttons.find(b => b.id === btnConfig.id);
             if (defaultBtn) {
                 Object.assign(btnConfig, JSON.parse(JSON.stringify(defaultBtn)));
-                updateButtonElement(buttonId, { width: btnConfig.width, height: btnConfig.height, bg: btnConfig.bg, key: btnConfig.key, text: btnConfig.text, locked: btnConfig.locked, opacity: btnConfig.opacity });
+                updateButtonElement(buttonId, { width: btnConfig.width, height: btnConfig.height, bg: btnConfig.bg, key: btnConfig.key, locked: btnConfig.locked, opacity: btnConfig.opacity });
                 const btnEl = document.querySelector(`.gamepad-btn[data-id="${buttonId}"]`);
                 if (btnEl) {
                     btnEl.textContent = btnConfig.text;
@@ -565,7 +654,11 @@
         if (connectorLine) connectorLine.remove();
         buttonEditor = null;
         connectorLine = null;
+        document.querySelectorAll('.gamepad-btn').forEach(btn => {
+            btn.dataset.editing = 'false';
+        });
         currentEditingButtonId = null;
+        editorOpen = false; // 重置全局标志
     }
 
     function rebuildButtons() {
@@ -616,29 +709,38 @@
         panel.id = 'gamepad-settings';
         panel.style.cssText = `
             position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: #2a2a2a; color: white; padding: 0 24px 24px 24px;
+            background: #2a2a2a; color: white;
             border-radius: 28px;
-            z-index: 20000; width: 460px; max-height: 80vh; overflow-y: auto;
+            z-index: 20000; width: 460px; max-height: 80vh;
+            display: flex; flex-direction: column;
             box-shadow: 0 20px 40px black; border: 1px solid #444;
             font-family: system-ui; backdrop-filter: blur(10px);
+            padding: 0;
         `;
 
         panel.addEventListener('keydown', (e) => e.stopPropagation(), true);
         panel.addEventListener('keyup', (e) => e.stopPropagation(), true);
+        panel.addEventListener('mousedown', (e) => e.stopPropagation());
+        panel.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: false });
+
+        const headerDiv = document.createElement('div');
+        headerDiv.style.cssText = 'flex-shrink:0;';
 
         const titleBar = document.createElement('div');
         titleBar.style.cssText = `
             cursor: move;
-            background: #3a3a3a;
-            margin: 0 -24px 20px -24px;
+            background: linear-gradient(145deg, #3a3a3a, #2a2a2a);
             padding: 16px 24px;
             border-radius: 28px 28px 0 0;
             font-weight: bold;
             text-align: center;
             user-select: none;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            box-shadow: inset 0 -1px 0 #555;
         `;
         titleBar.textContent = 'FastKB 设置';
-        panel.appendChild(titleBar);
+        headerDiv.appendChild(titleBar);
 
         let dragStartX, dragStartY, dragStartLeft, dragStartTop, dragging = false;
         function startDrag(e) {
@@ -677,30 +779,35 @@
         titleBar.addEventListener('mousedown', startDrag);
         titleBar.addEventListener('touchstart', startDrag, { passive: false });
 
-        const tabs = ['常规', '按键', '连发', '高级', '配置', '帮助'];
+        const tabs = ['常规', '按键', '连发', '宏', '高级', '配置', '帮助'];
         let currentTab = '常规';
         const tabContainer = document.createElement('div');
-        tabContainer.style.cssText = 'display:flex; gap:6px; margin-bottom:20px; flex-wrap:wrap;';
+        tabContainer.style.cssText = 'display:flex; gap:6px; margin:16px 24px 20px 24px; flex-wrap:wrap;';
         tabs.forEach(tabName => {
             const tabBtn = document.createElement('button');
             tabBtn.textContent = tabName;
             tabBtn.dataset.tab = tabName;
             tabBtn.style.cssText = `
-                flex:1; padding:6px; background:${currentTab===tabName?'#4caf50':'#333'}; border:none;
-                border-radius:12px; color:white; cursor:pointer;
+                flex:1; padding:8px 4px; background:${currentTab===tabName?'#4caf50':'#333'}; border:none;
+                border-radius:20px; color:white; cursor:pointer; font-size:14px;
+                box-shadow: ${currentTab===tabName?'0 2px 8px rgba(76,175,80,0.4)':'0 2px 4px rgba(0,0,0,0.3)'};
+                transition: all 0.2s;
             `;
             tabBtn.addEventListener('click', () => {
                 currentTab = tabName;
                 tabContainer.querySelectorAll('button').forEach(btn => {
                     btn.style.background = btn.dataset.tab === currentTab ? '#4caf50' : '#333';
+                    btn.style.boxShadow = btn.dataset.tab === currentTab ? '0 2px 8px rgba(76,175,80,0.4)' : '0 2px 4px rgba(0,0,0,0.3)';
                 });
                 renderContent();
             });
             tabContainer.appendChild(tabBtn);
         });
-        panel.appendChild(tabContainer);
+        headerDiv.appendChild(tabContainer);
+        panel.appendChild(headerDiv);
 
         const contentDiv = document.createElement('div');
+        contentDiv.style.cssText = 'flex:1; overflow-y: auto; padding: 0 24px 24px 24px;';
         panel.appendChild(contentDiv);
 
         function renderContent() {
@@ -708,17 +815,19 @@
             if (currentTab === '常规') renderGeneral(contentDiv);
             else if (currentTab === '按键') renderKeySettings(contentDiv);
             else if (currentTab === '连发') renderTurbo(contentDiv);
+            else if (currentTab === '宏') renderMacro(contentDiv);
             else if (currentTab === '高级') renderAdvanced(contentDiv);
             else if (currentTab === '配置') renderProfile(contentDiv);
             else if (currentTab === '帮助') renderHelp(contentDiv);
         }
 
+        // ---------- 完整渲染函数 ----------
         function renderGeneral(container) {
+            const group1 = document.createElement('div');
+            group1.innerHTML = '<div style="font-size:14px; margin-bottom:8px; color:#aaa;">基础</div>';
             const items = [
                 ['编辑模式', 'editMode'],
-                ['按键声音', 'soundEnabled'],
-                ['边缘吸附', 'snapToEdge'],
-                ['辅助对齐', 'snapAlign']
+                ['按键声音', 'soundEnabled']
             ];
             items.forEach(([label, prop]) => {
                 const div = document.createElement('div');
@@ -726,7 +835,7 @@
                 div.innerHTML = `<label style="display:flex; align-items:center; gap:8px;">
                     <input type="checkbox" id="${prop}" ${activeConfig[prop] ? 'checked' : ''}> <span>${label}</span>
                 </label>`;
-                container.appendChild(div);
+                group1.appendChild(div);
                 div.querySelector('input').addEventListener('change', (e) => {
                     activeConfig[prop] = e.target.checked;
                     if (prop === 'editMode') {
@@ -739,15 +848,53 @@
                     saveActiveProfile();
                 });
             });
-
+            container.appendChild(group1);
             container.appendChild(document.createElement('hr')).style.cssText = 'border:0.5px solid #555; margin:16px 0;';
 
+            const group2 = document.createElement('div');
+            group2.innerHTML = '<div style="font-size:14px; margin-bottom:8px; color:#aaa;">对齐</div>';
+            const alignItems = [
+                ['边缘吸附', 'snapToEdge'],
+                ['辅助对齐', 'snapAlign']
+            ];
+            alignItems.forEach(([label, prop]) => {
+                const div = document.createElement('div');
+                div.style.marginBottom = '12px';
+                div.innerHTML = `<label style="display:flex; align-items:center; gap:8px;">
+                    <input type="checkbox" id="${prop}" ${activeConfig[prop] ? 'checked' : ''}> <span>${label}</span>
+                </label>`;
+                group2.appendChild(div);
+                div.querySelector('input').addEventListener('change', (e) => {
+                    activeConfig[prop] = e.target.checked;
+                    saveActiveProfile();
+                });
+            });
+            const alignSlider = document.createElement('div');
+            alignSlider.style.marginBottom = '16px';
+            alignSlider.innerHTML = `
+                <div style="display:flex; justify-content:space-between;">
+                    <span>对齐阈值</span><span id="alignThreshold-val">${activeConfig.alignThreshold}px</span>
+                </div>
+                <input type="range" id="alignThreshold" min="5" max="50" value="${activeConfig.alignThreshold}" style="width:100%;">
+            `;
+            group2.appendChild(alignSlider);
+            const alignInput = alignSlider.querySelector('input');
+            const alignSpan = alignSlider.querySelector('span:last-child');
+            alignInput.addEventListener('input', (e) => {
+                activeConfig.alignThreshold = +e.target.value;
+                alignSpan.textContent = activeConfig.alignThreshold + 'px';
+                saveActiveProfile();
+            });
+            container.appendChild(group2);
+            container.appendChild(document.createElement('hr')).style.cssText = 'border:0.5px solid #555; margin:16px 0;';
+
+            const group3 = document.createElement('div');
+            group3.innerHTML = '<div style="font-size:14px; margin-bottom:8px; color:#aaa;">控制条</div>';
             const sliders = [
-                ['控制条宽度', 'barWidth', 40, 200],
-                ['控制条高度', 'barHeight', 0, 30],
-                ['控制条偏移', 'barOffset', 0, 50, 'px'],
-                ['控制条水平位置(%)', 'barPosition', 0, 100, '%'],
-                ['对齐阈值', 'alignThreshold', 5, 50, 'px']
+                ['宽度', 'barWidth', 40, 200],
+                ['高度', 'barHeight', 0, 30],
+                ['垂直偏移', 'barOffset', 0, 50, 'px'],
+                ['水平位置(%)', 'barPosition', 0, 100, '%']
             ];
             sliders.forEach(([label, prop, min, max, unit='px']) => {
                 const div = document.createElement('div');
@@ -758,7 +905,7 @@
                     </div>
                     <input type="range" id="${prop}" min="${min}" max="${max}" value="${activeConfig[prop]}" style="width:100%;">
                 `;
-                container.appendChild(div);
+                group3.appendChild(div);
                 const input = div.querySelector('input');
                 const span = div.querySelector('span:last-child');
                 input.addEventListener('input', (e) => {
@@ -768,21 +915,19 @@
                     saveActiveProfile();
                 });
             });
-
-            container.appendChild(document.createElement('hr')).style.cssText = 'border:0.5px solid #555; margin:16px 0;';
-
             const colorDiv = document.createElement('div');
             colorDiv.style.marginBottom = '16px';
             colorDiv.innerHTML = `
-                <div>控制条颜色</div>
+                <div>颜色</div>
                 <input type="color" id="barColor" value="${activeConfig.barColor}">
             `;
-            container.appendChild(colorDiv);
+            group3.appendChild(colorDiv);
             colorDiv.querySelector('input').addEventListener('input', (e) => {
                 activeConfig.barColor = e.target.value;
                 createControlBar();
                 saveActiveProfile();
             });
+            container.appendChild(group3);
         }
 
         function renderKeySettings(container) {
@@ -792,13 +937,14 @@
             addBtn.textContent = '+ 添加按键';
             addBtn.style.cssText = 'width:100%; padding:8px; background:#4caf50; border:none; border-radius:12px; color:white; margin-bottom:12px;';
             addBtn.addEventListener('click', () => {
+                const newId = 'custom'+Date.now();
                 activeConfig.buttons.push({
-                    id: 'custom'+Date.now(), text: '新', key: '', code: '', type: 'action',
+                    id: newId, text: '新', key: '', code: '', type: 'action',
                     left: 100, top: 100, width: 65, height: 65, bg: 'rgba(255,255,255,0.15)', pressedBg: 'rgba(255,255,255,0.4)', opacity: 1.0, locked: false
                 });
                 saveActiveProfile();
                 rebuildButtons();
-                renderKeySettings(container);
+                setTimeout(() => showButtonEditor(newId), 100);
             });
             container.appendChild(addBtn);
 
@@ -811,8 +957,8 @@
                     <div style="display:flex; gap:4px; align-items:center; flex-wrap:wrap;">
                         <span style="width:30px;">${btn.text}</span>
                         <input type="text" class="key-input" value="${btn.key}" style="width:70px; background:#222; color:white; border:1px solid #555; padding:4px; border-radius:6px;">
-                        <input type="number" class="width-input" value="${btn.width}" min="30" max="120" style="width:60px; background:#222; color:white; border:1px solid #555; padding:4px; border-radius:6px;" placeholder="宽">
-                        <input type="number" class="height-input" value="${btn.height}" min="30" max="120" style="width:60px; background:#222; color:white; border:1px solid #555; padding:4px; border-radius:6px;" placeholder="高">
+                        <input type="number" class="width-input" value="${btn.width}" min="30" max="200" style="width:60px; background:#222; color:white; border:1px solid #555; padding:4px; border-radius:6px;" placeholder="宽">
+                        <input type="number" class="height-input" value="${btn.height}" min="30" max="200" style="width:60px; background:#222; color:white; border:1px solid #555; padding:4px; border-radius:6px;" placeholder="高">
                         <input type="color" class="color-input" value="${btn.bg.startsWith('#') ? btn.bg : '#ffffff'}" style="width:40px; height:30px;">
                         <input type="number" class="opacity-input" value="${btn.opacity}" min="0.1" max="1" step="0.1" style="width:50px; background:#222; color:white; border:1px solid #555; padding:4px; border-radius:6px;">
                         <label style="color:#aaa;"><input type="checkbox" class="locked-check" ${btn.locked ? 'checked' : ''}>锁</label>
@@ -829,7 +975,12 @@
                 const lockedCheck = row.querySelector('.locked-check');
                 const removeBtn = row.querySelector('.remove-btn');
 
-                keyInput.addEventListener('input', (e) => { btn.key = e.target.value; updateButtonElement(btn.id, {key: btn.key}); saveActiveProfile(); });
+                keyInput.addEventListener('input', (e) => {
+                    btn.key = e.target.value;
+                    btn.code = getKeyCode(btn.key);
+                    updateButtonElement(btn.id, {key: btn.key});
+                    saveActiveProfile();
+                });
                 widthInput.addEventListener('input', (e) => { btn.width = +e.target.value; updateButtonElement(btn.id, {width: btn.width}); saveActiveProfile(); });
                 heightInput.addEventListener('input', (e) => { btn.height = +e.target.value; updateButtonElement(btn.id, {height: btn.height}); saveActiveProfile(); });
                 colorInput.addEventListener('input', (e) => { btn.bg = e.target.value; updateButtonElement(btn.id, {bg: btn.bg}); saveActiveProfile(); });
@@ -862,9 +1013,126 @@
             div.querySelector('#turboRandom').addEventListener('input', (e) => { activeConfig.turboRandom = +e.target.value; saveActiveProfile(); });
         }
 
+        function renderMacro(container) {
+            container.innerHTML = '';
+
+            const recordBtn = document.createElement('button');
+            recordBtn.id = 'macro-record';
+            recordBtn.textContent = macroRecording ? '结束录制' : '录制宏';
+            recordBtn.style.cssText = 'width:100%; padding:8px; background:#2196F3; border:none; border-radius:12px; color:white; margin-bottom:8px;';
+            recordBtn.addEventListener('click', () => {
+                if (!macroRecording) {
+                    macroRecording = true;
+                    macroSteps = [];
+                    recordBtn.textContent = '结束录制';
+                    document.addEventListener('keydown', macroRecordHandler);
+                    document.addEventListener('keyup', macroRecordHandler);
+                } else {
+                    macroRecording = false;
+                    recordBtn.textContent = '录制宏';
+                    document.removeEventListener('keydown', macroRecordHandler);
+                    document.removeEventListener('keyup', macroRecordHandler);
+                    alert('录制结束，共 ' + macroSteps.length + ' 步');
+                }
+            });
+            container.appendChild(recordBtn);
+
+            const playRow = document.createElement('div');
+            playRow.style.cssText = 'display:flex; gap:8px; margin:8px 0;';
+            playRow.innerHTML = `
+                <button id="macro-play" style="flex:2; background:#FF9800; border:none; border-radius:12px; color:white; padding:8px;">播放宏</button>
+                <button id="macro-stop" style="flex:1; background:#f44336; border:none; border-radius:12px; color:white; padding:8px;">停止</button>
+            `;
+            container.appendChild(playRow);
+
+            const loopDiv = document.createElement('div');
+            loopDiv.style.margin = '12px 0';
+            loopDiv.innerHTML = `
+                <label style="display:flex; align-items:center; gap:8px;">
+                    <input type="checkbox" id="macro-loop" ${activeConfig.macroLoopEnabled ? 'checked' : ''}> 循环播放
+                </label>
+            `;
+            container.appendChild(loopDiv);
+            loopDiv.querySelector('#macro-loop').addEventListener('change', (e) => {
+                activeConfig.macroLoopEnabled = e.target.checked;
+                saveActiveProfile();
+            });
+
+            const intervalDiv = document.createElement('div');
+            intervalDiv.style.marginBottom = '16px';
+            intervalDiv.innerHTML = `
+                <div style="display:flex; justify-content:space-between;">
+                    <span>播放间隔(ms)</span><span id="macroPlayInterval-val">${activeConfig.macroPlayInterval}ms</span>
+                </div>
+                <input type="range" id="macroPlayInterval" min="50" max="500" value="${activeConfig.macroPlayInterval}" style="width:100%;">
+            `;
+            container.appendChild(intervalDiv);
+            const intervalInput = intervalDiv.querySelector('#macroPlayInterval');
+            const intervalSpan = intervalDiv.querySelector('#macroPlayInterval-val');
+            intervalInput.addEventListener('input', (e) => {
+                activeConfig.macroPlayInterval = +e.target.value;
+                intervalSpan.textContent = activeConfig.macroPlayInterval + 'ms';
+                saveActiveProfile();
+            });
+
+            const clearBtn = document.createElement('button');
+            clearBtn.textContent = '清空宏';
+            clearBtn.style.cssText = 'width:100%; padding:8px; background:#555; border:none; border-radius:12px; color:white; margin-top:12px;';
+            clearBtn.addEventListener('click', () => {
+                macroSteps = [];
+                alert('宏已清空');
+            });
+            container.appendChild(clearBtn);
+
+            playRow.querySelector('#macro-play').addEventListener('click', () => {
+                if (macroSteps.length === 0) {
+                    alert('没有录制的宏');
+                    return;
+                }
+                if (macroPlaying) stopMacro();
+                macroPlaying = true;
+                macroLoop = activeConfig.macroLoopEnabled;
+                let index = 0;
+                function playStep() {
+                    if (!macroPlaying) return;
+                    if (index >= macroSteps.length) {
+                        if (macroLoop) {
+                            index = 0;
+                            macroPlayTimer = setTimeout(playStep, activeConfig.macroPlayInterval);
+                        } else {
+                            macroPlaying = false;
+                        }
+                        return;
+                    }
+                    const step = macroSteps[index];
+                    sendKey('keydown', step.key, step.code);
+                    setTimeout(() => sendKey('keyup', step.key, step.code), 50);
+                    index++;
+                    macroPlayTimer = setTimeout(playStep, activeConfig.macroPlayInterval);
+                }
+                playStep();
+            });
+
+            playRow.querySelector('#macro-stop').addEventListener('click', stopMacro);
+        }
+
+        function stopMacro() {
+            macroPlaying = false;
+            if (macroPlayTimer) {
+                clearTimeout(macroPlayTimer);
+                macroPlayTimer = null;
+            }
+        }
+
+        function macroRecordHandler(e) {
+            if (!macroRecording) return;
+            macroSteps.push({ key: e.key, code: e.code });
+        }
+
         function renderAdvanced(container) {
+            const group1 = document.createElement('div');
+            group1.innerHTML = '<div style="font-size:14px; margin-bottom:8px; color:#aaa;">系统</div>';
             const advancedItems = [
-                ['宏录制', 'macroEnabled', '录制按键序列'],
                 ['屏蔽系统按键', 'blockKeys', '阻止某些按键影响游戏'],
                 ['游戏模式', 'gameMode', '优化性能，禁用页面滚动']
             ];
@@ -877,21 +1145,21 @@
                     </label>
                     <div style="font-size:12px; color:#aaa; margin-left:24px;">${desc}</div>
                 `;
-                container.appendChild(div);
+                group1.appendChild(div);
                 div.querySelector('input').addEventListener('change', (e) => {
                     activeConfig[prop] = e.target.checked;
-                    if (prop === 'macroEnabled') toggleMacro(activeConfig[prop]);
                     if (prop === 'gameMode') toggleGameMode(activeConfig[prop]);
                     saveActiveProfile();
                 });
             });
-
+            container.appendChild(group1);
             container.appendChild(document.createElement('hr')).style.cssText = 'border:0.5px solid #555; margin:16px 0;';
 
+            const group2 = document.createElement('div');
+            group2.innerHTML = '<div style="font-size:14px; margin-bottom:8px; color:#aaa;">手势</div>';
             const sliders = [
                 ['长按触发(ms)', 'longPressTime', 200, 1000],
-                ['双击间隔(ms)', 'doubleClickSpeed', 100, 800],
-                ['宏播放间隔(ms)', 'macroPlayInterval', 50, 500]
+                ['双击间隔(ms)', 'doubleClickSpeed', 100, 800]
             ];
             sliders.forEach(([label, prop, min, max]) => {
                 const div = document.createElement('div');
@@ -902,7 +1170,7 @@
                     </div>
                     <input type="range" id="${prop}" min="${min}" max="${max}" value="${activeConfig[prop]}" style="width:100%;">
                 `;
-                container.appendChild(div);
+                group2.appendChild(div);
                 const input = div.querySelector('input');
                 const span = div.querySelector('span:last-child');
                 input.addEventListener('input', (e) => {
@@ -911,61 +1179,17 @@
                     saveActiveProfile();
                 });
             });
-
+            container.appendChild(group2);
             container.appendChild(document.createElement('hr')).style.cssText = 'border:0.5px solid #555; margin:16px 0;';
 
-            const macroDiv = document.createElement('div');
-            macroDiv.style.marginTop = '8px';
-            macroDiv.innerHTML = `
-                <button id="macro-record" style="background:#2196F3; border:none; border-radius:12px; color:white; padding:8px; width:48%;">${macroRecording ? '结束录制' : '录制宏'}</button>
-                <button id="macro-play" style="background:#FF9800; border:none; border-radius:12px; color:white; padding:8px; width:48%;">播放宏</button>
-                <div style="margin-top:8px; font-size:12px; color:#aaa;">录制时点击按钮记录按键，再次点击结束录制</div>
-            `;
-            container.appendChild(macroDiv);
-            macroDiv.querySelector('#macro-record').addEventListener('click', () => {
-                if (!macroRecording) {
-                    macroRecording = true;
-                    macroSteps = [];
-                    macroDiv.querySelector('#macro-record').textContent = '结束录制';
-                } else {
-                    macroRecording = false;
-                    macroDiv.querySelector('#macro-record').textContent = '录制宏';
-                    alert('录制结束，共 ' + macroSteps.length + ' 步');
-                }
-            });
-            macroDiv.querySelector('#macro-play').addEventListener('click', () => {
-                if (macroSteps.length === 0) return;
-                macroPlaying = true;
-                let i = 0;
-                function playStep() {
-                    if (i >= macroSteps.length || !macroPlaying) return;
-                    const step = macroSteps[i];
-                    sendKey('keydown', step.key, step.code);
-                    setTimeout(() => sendKey('keyup', step.key, step.code), 50);
-                    i++;
-                    setTimeout(playStep, activeConfig.macroPlayInterval);
-                }
-                playStep();
-            });
-
-            container.appendChild(document.createElement('hr')).style.cssText = 'border:0.5px solid #555; margin:16px 0;';
-
-            const quickDiv = document.createElement('div');
-            quickDiv.innerHTML = `
-                <div>快速切换配置快捷键: <input type="text" id="quickSwitchKey" value="${activeConfig.quickSwitchKey}" style="width:80px; background:#222; color:white; border:1px solid #555; padding:4px;"></div>
-                <p style="font-size:12px; color:#aaa;">按下此键循环切换配置文件</p>
-            `;
-            container.appendChild(quickDiv);
-            quickDiv.querySelector('input').addEventListener('input', (e) => { activeConfig.quickSwitchKey = e.target.value; saveActiveProfile(); });
-
-            container.appendChild(document.createElement('hr')).style.cssText = 'border:0.5px solid #555; margin:16px 0;';
-
+            const group3 = document.createElement('div');
+            group3.innerHTML = '<div style="font-size:14px; margin-bottom:8px; color:#aaa;">导入/导出</div>';
             const exportDiv = document.createElement('div');
             exportDiv.innerHTML = `
                 <button id="export-config" style="background:#2196F3; border:none; border-radius:12px; color:white; padding:8px; width:48%;">导出配置</button>
                 <button id="import-config" style="background:#FF9800; border:none; border-radius:12px; color:white; padding:8px; width:48%;">导入配置</button>
             `;
-            container.appendChild(exportDiv);
+            group3.appendChild(exportDiv);
             exportDiv.querySelector('#export-config').addEventListener('click', () => {
                 const data = JSON.stringify(config, null, 2);
                 const blob = new Blob([data], {type: 'application/json'});
@@ -993,6 +1217,7 @@
                 };
                 input.click();
             });
+            container.appendChild(group3);
         }
 
         function renderProfile(container) {
@@ -1014,6 +1239,17 @@
                 <button id="profile-delete" style="flex:1; background:#f44336; border:none; border-radius:8px; color:white; padding:6px;">删除</button>
             `;
             container.appendChild(btnDiv);
+
+            const quickDiv = document.createElement('div');
+            quickDiv.style.marginTop = '20px';
+            quickDiv.innerHTML = `
+                <hr style="border:0.5px solid #555; margin:16px 0;">
+                <div style="font-size:14px; margin-bottom:8px; color:#aaa;">快速切换</div>
+                <div>快捷键: <input type="text" id="quickSwitchKey" value="${activeConfig.quickSwitchKey}" style="width:80px; background:#222; color:white; border:1px solid #555; padding:4px;"></div>
+                <p style="font-size:12px; color:#aaa;">按下此键循环切换配置文件</p>
+            `;
+            container.appendChild(quickDiv);
+            quickDiv.querySelector('#quickSwitchKey').addEventListener('input', (e) => { activeConfig.quickSwitchKey = e.target.value; saveActiveProfile(); });
 
             selectDiv.querySelector('#profile-select').addEventListener('change', (e) => {
                 switchProfile(e.target.value);
@@ -1046,6 +1282,7 @@
                     config.activeProfile = '默认';
                     activeConfig = config.profiles['默认'];
                     saveConfig();
+                    rebuildAll();
                     panel.remove(); settingsVisible = false;
                 }
             });
@@ -1076,39 +1313,22 @@
                         <li><b>• 双击编辑</b>：编辑模式下双击按钮弹出浮动工具栏，可调整宽高、颜色、透明度、按键映射等。</li>
                         <li><b>• 辅助对齐</b>：拖拽按钮时自动对齐其他按钮，阈值可调。</li>
                         <li><b>• 连发CPS</b>：设置每秒点击次数，随机偏移防检测。</li>
-                        <li><b>• 宏录制</b>：点击“录制宏”开始记录按键，再次点击停止；点击“播放宏”回放，间隔可调。</li>
+                        <li><b>• 宏录制</b>：点击“录制宏”开始记录按键，再次点击停止；可循环播放、自定义间隔。</li>
                         <li><b>• 游戏模式</b>：禁用页面滚动，提升游戏体验。</li>
                         <li><b>• 配置文件</b>：可创建多个配置，快速切换，导出/导入。</li>
                         <li><b>• 快捷键</b>：按F5（可自定义）循环切换配置文件。</li>
                     </ul>
-                    <p style="margin:0 0 8px;">当前版本：v1.0</p>
+                    <hr style="border:0.5px solid #555; margin:16px 0;">
+                    <p style="margin:8px 0 0; text-align:center; color:#aaa;">当前版本：v1.2.4</p>
+                    <p style="margin:0; text-align:center; color:#aaa;">© ${new Date().getFullYear()} FastNow Studio | BSD 3-Clause</p>
                 </div>
             `;
         }
+        // ---------- 渲染函数结束 ----------
 
         renderContent();
 
-        const footer = document.createElement('div');
-        footer.style.cssText = 'text-align:center; font-size:12px; color:#aaa; margin-top:20px; border-top:1px solid #444; padding-top:12px;';
-        const year = new Date().getFullYear();
-        footer.innerHTML = `© ${year} FastNow Studio | BSD 3-Clause`;
-        panel.appendChild(footer);
-
         document.body.appendChild(panel);
-    }
-
-    function toggleMacro(enable) {
-        if (enable) {
-            document.addEventListener('keydown', macroRecordHandler);
-            document.addEventListener('keyup', macroRecordHandler);
-        } else {
-            document.removeEventListener('keydown', macroRecordHandler);
-            document.removeEventListener('keyup', macroRecordHandler);
-        }
-    }
-    function macroRecordHandler(e) {
-        if (!macroRecording) return;
-        macroSteps.push({ key: e.key, code: e.code, delay: activeConfig.macroPlayInterval });
     }
 
     function toggleGameMode(enable) {
