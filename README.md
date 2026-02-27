@@ -35,7 +35,7 @@
 ## 安装方法
 
 1. 安装浏览器扩展 **Tampermonkey**（[Chrome 版](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo) / [Firefox 版](https://addons.mozilla.org/firefox/addon/tampermonkey/)）。
-2. 点击链接安装脚本→[FastKB 网页虚拟键盘插件](https://fastly.jsdelivr.net/gh/fastnow/FastKB@main/fastkb.user.js)。
+2. 点击链接安装脚本→[FastKB 网页虚拟键盘插件](https://fastly.jsdelivr.net/gh/fastnow/FastKB@main/userscript/fastkb.user.js)。
 3. 在 Tampermonkey 中新建脚本，粘贴代码并保存。
 4. 刷新任意网页，页面顶部将出现红色控制条，点击即可打开设置面板。
 
