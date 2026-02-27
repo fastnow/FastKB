@@ -1,6 +1,6 @@
-![FastKB 宣传图](./assets/banner.png)
+# FastKB 网页虚拟键盘插件
 
-# FastKB 网页虚拟键盘插件 | 基于油猴Tampermonkey
+![FastKB 宣传图](./assets/banner.png)
 
 ![最后提交](https://img.shields.io/github/last-commit/fastnow/fastkb) ![MIT License](https://img.shields.io/badge/license-MIT-green.svg)
 
