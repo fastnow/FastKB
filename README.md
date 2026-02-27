@@ -1,10 +1,10 @@
+![FastKB 宣传图](./assets/banner.png)
+
 # FastKB 网页虚拟键盘插件 | 基于油猴Tampermonkey
 
-![version 1.0](https://img.shields.io/badge/version-1.0-blue.svg) ![MIT License](https://img.shields.io/badge/license-MIT-green.svg)
+![最后提交](https://img.shields.io/github/last-commit/fastnow/fastkb) ![MIT License](https://img.shields.io/badge/license-MIT-green.svg)
 
 **一款面向网页游戏与云游戏场景的高度可定制化虚拟触控手柄，支持自由布局、可视化编辑、宏录制、智能连发、手势操作、多配置管理等二十余项实用功能，专为触屏设备优化操控体验**
-
-![FastKB 宣传图](./assets/banner.png)
 ---
 
 ## 功能特点
